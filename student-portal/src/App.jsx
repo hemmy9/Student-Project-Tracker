@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Navigate, Route, Routes, useNavigate } from "react-router-dom";
 import { calculateProgress } from "./lib/calculateProgress.js";
 import { getSupabaseClient, subscribeToTable } from "./lib/supabaseClient.js";
@@ -6,6 +6,12 @@ import { getCached, removeCached, setCached, uploadFile } from "./lib/storage.js
 
 const SESSION_KEY = "student-session";
 const studentTables = ["tasks", "documents", "feedbacks", "messages"];
+const fallbackDashboardData = {
+  tasks: [{ id: "sample-task", title: "Sample project task", status: "In progress" }],
+  documents: [{ id: "sample-document", chapter: 1, title: "Sample chapter submission", status: "pending" }],
+  feedbacks: [{ id: "sample-feedback", comment: "Sample supervisor feedback will appear here." }],
+  messages: []
+};
 
 function LoginPage({ onLogin }) {
   const [email, setEmail] = useState("");
@@ -70,6 +76,7 @@ function Dashboard({ user, onLogout }) {
   const [data, setData] = useState({ tasks: [], documents: [], feedbacks: [], messages: [] });
   const [error, setError] = useState("");
   const [notice, setNotice] = useState("");
+  const [usingFallbackData, setUsingFallbackData] = useState(false);
   const [busy, setBusy] = useState(false);
   const [file, setFile] = useState(null);
   const [chapter, setChapter] = useState("1");
@@ -85,20 +92,24 @@ function Dashboard({ user, onLogout }) {
     const failed = results.find((result) => result.error);
     if (failed) throw failed.error;
     setData(Object.fromEntries(studentTables.map((table, index) => [table, results[index].data || []])));
+    setUsingFallbackData(false);
+  }
+
+  function showFallbackData(loadError) {
+    console.error("Could not load student dashboard:", loadError);
+    setData(fallbackDashboardData);
+    setUsingFallbackData(true);
+    setError("");
   }
 
   useEffect(() => {
     let active = true;
-    loadData().catch((loadError) => {
-      if (!active) return;
-      console.error("Could not load student dashboard:", loadError);
-      setError(loadError.message || "Could not load dashboard data.");
-    });
+    loadData().catch((loadError) => { if (active) showFallbackData(loadError); });
     const unsubscribe = studentTables.map((table) =>
       subscribeToTable(table, () => {
         if (active) loadData().catch((loadError) => {
           console.error(`Could not refresh ${table}:`, loadError);
-          setError(loadError.message || "Could not refresh dashboard data.");
+          showFallbackData(loadError);
         });
       }, `student_id=eq.${user.id}`)
     );
@@ -154,6 +165,7 @@ function Dashboard({ user, onLogout }) {
       </section>
       {error && <p className="error" role="alert">{error}</p>}
       {notice && <p className="success" role="status">{notice}</p>}
+      {usingFallbackData && <p className="demo-notice" role="alert">Run setup.sql in Supabase to load live project data. Showing sample data; uploads are disabled.</p>}
       <section className="summary-grid">
         <article className="panel">
           <span className="muted">Project progress</span>
@@ -196,7 +208,7 @@ function Dashboard({ user, onLogout }) {
           </select>
           <label htmlFor="document-file">File</label>
           <input id="document-file" type="file" required onChange={(event) => setFile(event.target.files?.[0] || null)} />
-          <button disabled={busy || !file} type="submit">{busy ? "Uploading…" : "Upload"}</button>
+          <button disabled={busy || !file || usingFallbackData} type="submit">{busy ? "Uploading…" : "Upload"}</button>
         </form>
         <ul className="record-list">
           {data.documents.map((document) => (
@@ -261,6 +273,7 @@ export default function App() {
 
   return (
     <Routes>
+      <Route path="/" element={<Navigate to={user?.role === "student" ? "/dashboard" : "/login"} replace />} />
       <Route path="/login" element={user ? <Navigate to="/dashboard" replace /> : <LoginPage onLogin={setUser} />} />
       <Route path="/dashboard" element={user?.role === "student" ? <Dashboard user={user} onLogout={logout} /> : <Navigate to="/login" replace />} />
       <Route path="*" element={<Navigate to={user?.role === "student" ? "/dashboard" : "/login"} replace />} />

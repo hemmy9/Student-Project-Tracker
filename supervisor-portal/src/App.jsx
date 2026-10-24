@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Navigate, Route, Routes, useNavigate } from "react-router-dom";
 import { calculateProgress } from "./lib/calculateProgress.js";
 import { assertCanInsertFeedback } from "./lib/permissions.js";
@@ -6,6 +6,11 @@ import { getSupabaseClient, subscribeToTable } from "./lib/supabaseClient.js";
 import { getCached, removeCached, setCached } from "./lib/storage.js";
 
 const SESSION_KEY = "supervisor-session";
+const fallbackStudents = [{ id: "sample-student", name: "Sample Student", email: "student@example.com", project_title: "Sample Project" }];
+const fallbackTasks = [{ id: "sample-task", student_id: "sample-student", title: "Sample project task", status: "In progress" }];
+const fallbackDocuments = [{ id: "sample-document", student_id: "sample-student", chapter: 1, title: "Sample chapter submission", status: "pending" }];
+const fallbackFeedbacks = [{ id: "sample-feedback", student_id: "sample-student", comment: "Sample feedback" }];
+const fallbackMessages = [];
 
 function LoginPage({ onLogin }) {
   const [email, setEmail] = useState("");
@@ -77,6 +82,7 @@ function Dashboard({ user, onLogout }) {
   const [reviewFeedback, setReviewFeedback] = useState({});
   const [error, setError] = useState("");
   const [notice, setNotice] = useState("");
+  const [usingFallbackData, setUsingFallbackData] = useState(false);
   const [busy, setBusy] = useState(false);
   const supabase = getSupabaseClient();
 
@@ -99,20 +105,28 @@ function Dashboard({ user, onLogout }) {
     setDocuments(documentResult.data || []);
     setFeedbacks(feedbackResult.data || []);
     setMessages(messageResult.data || []);
+    setUsingFallbackData(false);
+  }
+
+  function showFallbackData(loadError) {
+    console.error("Could not load supervisor dashboard:", loadError);
+    setStudents(fallbackStudents);
+    setTasks(fallbackTasks);
+    setDocuments(fallbackDocuments);
+    setFeedbacks(fallbackFeedbacks);
+    setMessages(fallbackMessages);
+    setUsingFallbackData(true);
+    setError("");
   }
 
   useEffect(() => {
     let active = true;
-    loadData().catch((loadError) => {
-      if (!active) return;
-      console.error("Could not load supervisor dashboard:", loadError);
-      setError(loadError.message || "Could not load dashboard data.");
-    });
+    loadData().catch((loadError) => { if (active) showFallbackData(loadError); });
     const unsubscribe = ["students", "tasks", "documents", "feedbacks", "messages"].map((table) =>
       subscribeToTable(table, () => {
         if (active) loadData().catch((loadError) => {
           console.error(`Could not refresh ${table}:`, loadError);
-          setError(loadError.message || "Could not refresh dashboard data.");
+          showFallbackData(loadError);
         });
       })
     );
@@ -193,6 +207,7 @@ function Dashboard({ user, onLogout }) {
       </section>
       {error && <p className="error" role="alert">{error}</p>}
       {notice && <p className="success" role="status">{notice}</p>}
+      {usingFallbackData && <p className="demo-notice" role="alert">Run setup.sql in Supabase to load live project data. Showing sample data; reviews and feedback are disabled.</p>}
       <section className="student-grid">
         {students.map((student) => {
           const studentTasks = tasks.filter((task) => task.student_id === student.id);
@@ -237,8 +252,8 @@ function Dashboard({ user, onLogout }) {
                       }))}
                     />
                     <div className="review-actions">
-                      <button disabled={busy} type="button" onClick={() => reviewDocument(document, "approved")}>Approve</button>
-                      <button className="secondary" disabled={busy} type="button" onClick={() => reviewDocument(document, "rejected")}>Reject</button>
+                      <button disabled={busy || usingFallbackData} type="button" onClick={() => reviewDocument(document, "approved")}>Approve</button>
+                      <button className="secondary" disabled={busy || usingFallbackData} type="button" onClick={() => reviewDocument(document, "rejected")}>Reject</button>
                     </div>
                   </div>
                 </li>
@@ -257,7 +272,7 @@ function Dashboard({ user, onLogout }) {
           </select>
           <label htmlFor="feedback-comment">Feedback</label>
           <textarea id="feedback-comment" value={comment} onChange={(event) => setComment(event.target.value)} required rows="4" />
-          <button disabled={busy || !students.length} type="submit">{busy ? "Saving…" : "Save feedback"}</button>
+          <button disabled={busy || !students.length || usingFallbackData} type="submit">{busy ? "Saving…" : "Save feedback"}</button>
         </form>
       </section>
       <p className="demo-notice">
@@ -294,6 +309,7 @@ export default function App() {
 
   return (
     <Routes>
+      <Route path="/" element={<Navigate to={user?.role === "supervisor" ? "/supervisor-dashboard" : "/supervisor-login"} replace />} />
       <Route path="/supervisor-login" element={user ? <Navigate to="/supervisor-dashboard" replace /> : <LoginPage onLogin={setUser} />} />
       <Route path="/supervisor-dashboard" element={user?.role === "supervisor" ? <Dashboard user={user} onLogout={logout} /> : <Navigate to="/supervisor-login" replace />} />
       <Route path="*" element={<Navigate to={user?.role === "supervisor" ? "/supervisor-dashboard" : "/supervisor-login"} replace />} />
