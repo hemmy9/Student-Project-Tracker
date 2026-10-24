@@ -1,4 +1,3 @@
--- Proprietary - Student Project Tracker FYP - Unauthorized copying prohibited
 alter table public.students
   add column if not exists email text,
   add column if not exists role text not null default 'student';
@@ -22,23 +21,6 @@ alter table public.documents
   add column if not exists review_feedback text,
   add column if not exists reviewed_by uuid,
   add column if not exists reviewed_at timestamptz;
-
-create table if not exists public.messages (
-  id uuid primary key default gen_random_uuid(),
-  student_id uuid not null,
-  sender_id uuid,
-  sender_role text,
-  content text not null,
-  created_at timestamptz not null default now()
-);
-
--- Retain existing message rows and add the fields required by the portal chat.
-alter table public.messages
-  add column if not exists student_id uuid,
-  add column if not exists sender_id uuid,
-  add column if not exists sender_role text,
-  add column if not exists content text,
-  add column if not exists created_at timestamptz not null default now();
 
 do $$
 declare

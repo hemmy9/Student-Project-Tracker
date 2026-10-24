@@ -1,9 +1,5 @@
-// Proprietary - Student Project Tracker FYP - Unauthorized copying prohibited
 import React, { useEffect, useState } from "react";
 import { Navigate, Route, Routes, useNavigate } from "react-router-dom";
-import Home from "./pages/Home.tsx";
-import Login from "./pages/Login.tsx";
-import ChatPanel from "./components/ChatPanel.jsx";
 import { calculateProgress } from "./lib/calculateProgress.js";
 import { assertCanInsertFeedback } from "./lib/permissions.js";
 import { getSupabaseClient, subscribeToTable } from "./lib/supabaseClient.js";
@@ -14,11 +10,73 @@ const fallbackStudents = [{ id: "sample-student", name: "Sample Student", email:
 const fallbackTasks = [{ id: "sample-task", student_id: "sample-student", title: "Sample project task", status: "In progress" }];
 const fallbackDocuments = [{ id: "sample-document", student_id: "sample-student", chapter: 1, title: "Sample chapter submission", status: "pending" }];
 const fallbackFeedbacks = [{ id: "sample-feedback", student_id: "sample-student", comment: "Sample feedback" }];
+const fallbackMessages = [];
+
+function LoginPage({ onLogin }) {
+  const [email, setEmail] = useState("");
+  const [error, setError] = useState("");
+  const [busy, setBusy] = useState(false);
+  const navigate = useNavigate();
+
+  async function submit(event) {
+    event.preventDefault();
+    setBusy(true);
+    setError("");
+    try {
+      const normalizedEmail = email.trim().toLowerCase();
+      const { data, error: queryError } = await getSupabaseClient()
+        .from("supervisors")
+        .select("*")
+        .eq("email", normalizedEmail)
+        .maybeSingle();
+      if (queryError) throw queryError;
+      if (!data || data.role !== "supervisor") {
+        throw new Error("No supervisor account was found for that email.");
+      }
+      await setCached(SESSION_KEY, data);
+      onLogin(data);
+      navigate("/supervisor-dashboard", { replace: true });
+    } catch (loginError) {
+      console.error("Supervisor sign-in failed:", loginError);
+      setError(loginError.message || "Could not sign in.");
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  return (
+    <main className="auth-card">
+      <p className="eyebrow">SUPERVISOR WORKSPACE</p>
+      <h1>Sign in</h1>
+      <p className="muted">Enter the email address on your supervisor record.</p>
+      <form onSubmit={submit}>
+        <label htmlFor="supervisor-email">Email</label>
+        <input
+          id="supervisor-email"
+          type="email"
+          autoComplete="email"
+          required
+          value={email}
+          onChange={(event) => setEmail(event.target.value)}
+        />
+        <button disabled={busy} type="submit">
+          {busy ? "Checking…" : "Continue"}
+        </button>
+      </form>
+      {error && <p className="error" role="alert">{error}</p>}
+      <p className="demo-notice">
+        Demo-only email matching; this does not verify identity or protect student data.
+      </p>
+    </main>
+  );
+}
+
 function Dashboard({ user, onLogout }) {
   const [students, setStudents] = useState([]);
   const [tasks, setTasks] = useState([]);
   const [documents, setDocuments] = useState([]);
   const [feedbacks, setFeedbacks] = useState([]);
+  const [messages, setMessages] = useState([]);
   const [selectedStudent, setSelectedStudent] = useState("");
   const [comment, setComment] = useState("");
   const [reviewFeedback, setReviewFeedback] = useState({});
@@ -30,41 +88,41 @@ function Dashboard({ user, onLogout }) {
 
   async function loadData() {
     setError("");
-    const [studentResult, taskResult, documentResult, feedbackResult] = await Promise.all([
+    const [studentResult, taskResult, documentResult, feedbackResult, messageResult] = await Promise.all([
       supabase.from("students").select("*").eq("role", "student").order("name"),
       supabase.from("tasks").select("*"),
       supabase.from("documents").select("*").order("created_at", { ascending: false }),
-      supabase.from("feedbacks").select("*")
+      supabase.from("feedbacks").select("*"),
+      supabase.from("messages").select("*")
     ]);
     if (studentResult.error) throw studentResult.error;
     if (taskResult.error) throw taskResult.error;
     if (documentResult.error) throw documentResult.error;
     if (feedbackResult.error) throw feedbackResult.error;
+    if (messageResult.error) throw messageResult.error;
     setStudents(studentResult.data || []);
     setTasks(taskResult.data || []);
     setDocuments(documentResult.data || []);
     setFeedbacks(feedbackResult.data || []);
+    setMessages(messageResult.data || []);
     setUsingFallbackData(false);
   }
 
   function showFallbackData(loadError) {
-    if (!user.demo) console.error("Could not load supervisor dashboard:", loadError);
+    console.error("Could not load supervisor dashboard:", loadError);
     setStudents(fallbackStudents);
     setTasks(fallbackTasks);
     setDocuments(fallbackDocuments);
     setFeedbacks(fallbackFeedbacks);
+    setMessages(fallbackMessages);
     setUsingFallbackData(true);
     setError("");
   }
 
   useEffect(() => {
     let active = true;
-    if (user.demo) {
-      showFallbackData(new Error("Local demo account uses sample dashboard data."));
-      return () => { active = false; };
-    }
     loadData().catch((loadError) => { if (active) showFallbackData(loadError); });
-    const unsubscribe = ["students", "tasks", "documents", "feedbacks"].map((table) =>
+    const unsubscribe = ["students", "tasks", "documents", "feedbacks", "messages"].map((table) =>
       subscribeToTable(table, () => {
         if (active) loadData().catch((loadError) => {
           console.error(`Could not refresh ${table}:`, loadError);
@@ -139,7 +197,7 @@ function Dashboard({ user, onLogout }) {
   return (
     <main className="page">
       <header className="topbar">
-        <a className="brand" href="/dashboard">ProjectTrack · Supervisor</a>
+        <a className="brand" href="/supervisor-dashboard">ProjectTrack · Supervisor</a>
         <button className="secondary" type="button" onClick={onLogout}>Log out</button>
       </header>
       <section className="welcome">
@@ -149,7 +207,7 @@ function Dashboard({ user, onLogout }) {
       </section>
       {error && <p className="error" role="alert">{error}</p>}
       {notice && <p className="success" role="status">{notice}</p>}
-      {usingFallbackData && <p className="demo-notice" role="alert">{user.demo ? "Demo account: showing sample data. Sign in with a provisioned Supabase Auth account for live project records." : "Run setup.sql in Supabase to load live project data. Showing sample data; reviews and feedback are disabled."}</p>}
+      {usingFallbackData && <p className="demo-notice" role="alert">Run setup.sql in Supabase to load live project data. Showing sample data; reviews and feedback are disabled.</p>}
       <section className="student-grid">
         {students.map((student) => {
           const studentTasks = tasks.filter((task) => task.student_id === student.id);
@@ -162,7 +220,7 @@ function Dashboard({ user, onLogout }) {
               <strong>{progress}% complete</strong>
               <div className="progress"><span style={{ width: `${progress}%` }} /></div>
               <p className="muted">{studentTasks.length} tasks</p>
-              <p>{feedbacks.filter((feedback) => feedback.student_id === student.id).length} feedback notes</p>
+              <p>{feedbacks.filter((feedback) => feedback.student_id === student.id).length} feedback notes · {messages.filter((message) => message.student_id === student.id).length} messages</p>
             </article>
           );
         })}
@@ -217,13 +275,8 @@ function Dashboard({ user, onLogout }) {
           <button disabled={busy || !students.length || usingFallbackData} type="submit">{busy ? "Saving…" : "Save feedback"}</button>
         </form>
       </section>
-      <ChatPanel
-        user={user}
-        studentId={selectedStudent}
-        studentName={students.find((student) => student.id === selectedStudent)?.name || students.find((student) => student.id === selectedStudent)?.email || "this student"}
-      />
       <p className="demo-notice">
-        Demo and browser-side role checks are not an access-control boundary; configure Supabase Auth and RLS before using real data.
+        Email-only demo. The browser-side role check is not an access-control boundary; configure Supabase Auth and RLS before using real data.
       </p>
     </main>
   );
@@ -249,20 +302,17 @@ export default function App() {
   async function logout() {
     await removeCached(SESSION_KEY);
     setUser(null);
-    navigate("/login", { replace: true });
+    navigate("/supervisor-login", { replace: true });
   }
 
   if (checking) return <main className="auth-card"><p>Loading…</p></main>;
 
   return (
     <Routes>
-      <Route path="/" element={user ? <Navigate to="/dashboard" replace /> : <Home />} />
-      <Route path="/login" element={user ? <Navigate to="/dashboard" replace /> : <><Home /><Login onLogin={setUser} defaultRole="supervisor" /></>} />
-      <Route path="/signup" element={user ? <Navigate to="/dashboard" replace /> : <><Home /><Login onLogin={setUser} defaultRole="supervisor" initialMode="signup" /></>} />
-      <Route path="/supervisor-login" element={<Navigate to="/login" replace />} />
-      <Route path="/dashboard" element={user?.role === "supervisor" ? <Dashboard user={user} onLogout={logout} /> : <Navigate to="/login" replace />} />
-      <Route path="/supervisor-dashboard" element={<Navigate to="/dashboard" replace />} />
-      <Route path="*" element={<Navigate to={user?.role === "supervisor" ? "/dashboard" : "/"} replace />} />
+      <Route path="/" element={<Navigate to={user?.role === "supervisor" ? "/supervisor-dashboard" : "/supervisor-login"} replace />} />
+      <Route path="/supervisor-login" element={user ? <Navigate to="/supervisor-dashboard" replace /> : <LoginPage onLogin={setUser} />} />
+      <Route path="/supervisor-dashboard" element={user?.role === "supervisor" ? <Dashboard user={user} onLogout={logout} /> : <Navigate to="/supervisor-login" replace />} />
+      <Route path="*" element={<Navigate to={user?.role === "supervisor" ? "/supervisor-dashboard" : "/supervisor-login"} replace />} />
     </Routes>
   );
 }

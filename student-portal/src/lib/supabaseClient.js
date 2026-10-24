@@ -1,4 +1,3 @@
-// Proprietary - Student Project Tracker FYP - Unauthorized copying prohibited
 import { createClient } from "@supabase/supabase-js";
 
 let client;

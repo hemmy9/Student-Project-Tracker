@@ -1,37 +1,19 @@
-// Proprietary - Student Project Tracker FYP - Unauthorized copying prohibited
 import localforage from "localforage";
 import { getSupabaseClient } from "./supabaseClient.js";
 
 const cache = localforage.createInstance({ name: "project-portal" });
 const bucketName = import.meta.env.VITE_STORAGE_BUCKET || "fyp-docs";
-const browserKeys = {
-  "student-session": "student_user",
-  "supervisor-session": "supervisor_user"
-};
 
-export async function getCached(key) {
-  const browserKey = browserKeys[key];
-  if (browserKey) {
-    const stored = localStorage.getItem(browserKey);
-    if (stored) return JSON.parse(stored);
-  }
-
-  const cached = await cache.getItem(key);
-  if (cached && browserKey) localStorage.setItem(browserKey, JSON.stringify(cached));
-  return cached;
+export function getCached(key) {
+  return cache.getItem(key);
 }
 
-export async function setCached(key, value) {
-  const browserKey = browserKeys[key];
-  if (browserKey) localStorage.setItem(browserKey, JSON.stringify(value));
-  await cache.setItem(key, value);
-  return value;
+export function setCached(key, value) {
+  return cache.setItem(key, value);
 }
 
-export async function removeCached(key) {
-  const browserKey = browserKeys[key];
-  if (browserKey) localStorage.removeItem(browserKey);
-  await cache.removeItem(key);
+export function removeCached(key) {
+  return cache.removeItem(key);
 }
 
 export async function uploadFile(file, folder) {
