@@ -1,3 +1,4 @@
+// Proprietary - Student Project Tracker FYP - Unauthorized copying prohibited
 export function calculateProgress(tasks = []) {
   if (!Array.isArray(tasks) || tasks.length === 0) return 0;
   const completed = tasks.filter((task) =>
@@ -7,4 +8,3 @@ export function calculateProgress(tasks = []) {
   ).length;
   return Math.round((completed / tasks.length) * 100);
 }
-

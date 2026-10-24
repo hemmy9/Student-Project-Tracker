@@ -1,11 +1,15 @@
+// Proprietary - Student Project Tracker FYP - Unauthorized copying prohibited
 import React, { useEffect, useState } from "react";
 import { Navigate, Route, Routes, useNavigate } from "react-router-dom";
+import Home from "./pages/Home.tsx";
+import Login from "./pages/Login.tsx";
+import ChatPanel from "./components/ChatPanel.jsx";
 import { calculateProgress } from "./lib/calculateProgress.js";
 import { getSupabaseClient, subscribeToTable } from "./lib/supabaseClient.js";
 import { getCached, removeCached, setCached, uploadFile } from "./lib/storage.js";
 
 const SESSION_KEY = "student-session";
-const studentTables = ["tasks", "documents", "feedbacks", "messages"];
+const studentTables = ["tasks", "documents", "feedbacks"];
 const fallbackDashboardData = {
   tasks: [{ id: "sample-task", title: "Sample project task", status: "In progress" }],
   documents: [{ id: "sample-document", chapter: 1, title: "Sample chapter submission", status: "pending" }],
@@ -13,67 +17,8 @@ const fallbackDashboardData = {
   messages: []
 };
 
-function LoginPage({ onLogin }) {
-  const [email, setEmail] = useState("");
-  const [error, setError] = useState("");
-  const [busy, setBusy] = useState(false);
-  const navigate = useNavigate();
-
-  async function submit(event) {
-    event.preventDefault();
-    setBusy(true);
-    setError("");
-    try {
-      const normalizedEmail = email.trim().toLowerCase();
-      const { data, error: queryError } = await getSupabaseClient()
-        .from("students")
-        .select("*")
-        .eq("email", normalizedEmail)
-        .maybeSingle();
-      if (queryError) throw queryError;
-      if (!data || data.role !== "student") {
-        throw new Error("No student account was found for that email.");
-      }
-      await setCached(SESSION_KEY, data);
-      onLogin(data);
-      navigate("/dashboard", { replace: true });
-    } catch (loginError) {
-      console.error("Student sign-in failed:", loginError);
-      setError(loginError.message || "Could not sign in.");
-    } finally {
-      setBusy(false);
-    }
-  }
-
-  return (
-    <main className="auth-card">
-      <p className="eyebrow">STUDENT WORKSPACE</p>
-      <h1>Sign in</h1>
-      <p className="muted">Enter the email address on your student record.</p>
-      <form onSubmit={submit}>
-        <label htmlFor="student-email">Email</label>
-        <input
-          id="student-email"
-          type="email"
-          autoComplete="email"
-          required
-          value={email}
-          onChange={(event) => setEmail(event.target.value)}
-        />
-        <button disabled={busy} type="submit">
-          {busy ? "Checking…" : "Continue"}
-        </button>
-      </form>
-      {error && <p className="error" role="alert">{error}</p>}
-      <p className="demo-notice">
-        Demo-only email matching; this does not verify identity or protect student data.
-      </p>
-    </main>
-  );
-}
-
 function Dashboard({ user, onLogout }) {
-  const [data, setData] = useState({ tasks: [], documents: [], feedbacks: [], messages: [] });
+  const [data, setData] = useState({ tasks: [], documents: [], feedbacks: [] });
   const [error, setError] = useState("");
   const [notice, setNotice] = useState("");
   const [usingFallbackData, setUsingFallbackData] = useState(false);
@@ -96,7 +41,7 @@ function Dashboard({ user, onLogout }) {
   }
 
   function showFallbackData(loadError) {
-    console.error("Could not load student dashboard:", loadError);
+    if (!user.demo) console.error("Could not load student dashboard:", loadError);
     setData(fallbackDashboardData);
     setUsingFallbackData(true);
     setError("");
@@ -104,6 +49,10 @@ function Dashboard({ user, onLogout }) {
 
   useEffect(() => {
     let active = true;
+    if (user.demo) {
+      showFallbackData(new Error("Local demo account uses sample dashboard data."));
+      return () => { active = false; };
+    }
     loadData().catch((loadError) => { if (active) showFallbackData(loadError); });
     const unsubscribe = studentTables.map((table) =>
       subscribeToTable(table, () => {
@@ -165,7 +114,7 @@ function Dashboard({ user, onLogout }) {
       </section>
       {error && <p className="error" role="alert">{error}</p>}
       {notice && <p className="success" role="status">{notice}</p>}
-      {usingFallbackData && <p className="demo-notice" role="alert">Run setup.sql in Supabase to load live project data. Showing sample data; uploads are disabled.</p>}
+      {usingFallbackData && <p className="demo-notice" role="alert">{user.demo ? "Demo account: showing sample data. Sign in with a provisioned Supabase Auth account for live project records." : "Run setup.sql in Supabase to load live project data. Showing sample data; uploads are disabled."}</p>}
       <section className="summary-grid">
         <article className="panel">
           <span className="muted">Project progress</span>
@@ -233,15 +182,7 @@ function Dashboard({ user, onLogout }) {
           ))}
         </ul>
       </section>
-      <section className="panel">
-        <h2>Messages</h2>
-        {data.messages.length === 0 && <p className="muted">No messages yet.</p>}
-        <ul className="record-list">
-          {data.messages.map((message) => (
-            <li key={message.id}>{message.content || message.message || message.body || "Message"}</li>
-          ))}
-        </ul>
-      </section>
+      <ChatPanel user={user} />
     </main>
   );
 }
@@ -273,10 +214,11 @@ export default function App() {
 
   return (
     <Routes>
-      <Route path="/" element={<Navigate to={user?.role === "student" ? "/dashboard" : "/login"} replace />} />
-      <Route path="/login" element={user ? <Navigate to="/dashboard" replace /> : <LoginPage onLogin={setUser} />} />
+      <Route path="/" element={user ? <Navigate to="/dashboard" replace /> : <Home />} />
+      <Route path="/login" element={user ? <Navigate to="/dashboard" replace /> : <><Home /><Login onLogin={setUser} defaultRole="student" /></>} />
+      <Route path="/signup" element={user ? <Navigate to="/dashboard" replace /> : <><Home /><Login onLogin={setUser} defaultRole="student" initialMode="signup" /></>} />
       <Route path="/dashboard" element={user?.role === "student" ? <Dashboard user={user} onLogout={logout} /> : <Navigate to="/login" replace />} />
-      <Route path="*" element={<Navigate to={user?.role === "student" ? "/dashboard" : "/login"} replace />} />
+      <Route path="*" element={<Navigate to={user?.role === "student" ? "/dashboard" : "/"} replace />} />
     </Routes>
   );
 }

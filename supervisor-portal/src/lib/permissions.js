@@ -1,3 +1,4 @@
+// Proprietary - Student Project Tracker FYP - Unauthorized copying prohibited
 export function canInsertFeedback(role) {
   return role === "supervisor";
 }
@@ -7,4 +8,3 @@ export function assertCanInsertFeedback(user) {
     throw new Error("Only a supervisor can submit feedback.");
   }
 }
-
