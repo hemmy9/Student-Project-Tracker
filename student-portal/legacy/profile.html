@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Student profile and account settings.">
+    <title>My Profile | Student Project Tracker</title>
+    <link rel="stylesheet" href="spt.css">
+    <script src="spt.js" defer></script>
+</head>
+<body>
+    <header class="page-header">
+        <h1>My Profile</h1>
+        <p>Student information and account settings.</p>
+    </header>
+
+    <main class="profile-page">
+        <section class="panel profile-information-panel">
+            <h2>Student Information</h2>
+            <dl class="profile-details" id="profile-details"></dl>
+        </section>
+
+        <section class="panel profile-password-panel" id="change-password">
+            <h2>Change Password</h2>
+            <p class="profile-security-note">This static prototype keeps a password hash in this browser. It does not provide server authentication. Leave Old Password blank the first time you set a password.</p>
+
+            <form id="change-password-form">
+                <label for="old-password">Old Password</label>
+                <input type="password" id="old-password" autocomplete="current-password">
+
+                <label for="new-password">New Password</label>
+                <input type="password" id="new-password" autocomplete="new-password" minlength="8" required>
+
+                <label for="confirm-password">Confirm Password</label>
+                <input type="password" id="confirm-password" autocomplete="new-password" minlength="8" required>
+
+                <button type="submit" class="primary-button">Save New Password</button>
+                <p id="password-toast" class="app-toast" role="status" aria-live="polite" hidden></p>
+            </form>
+        </section>
+
+        <button type="button" id="profile-logout-button" class="profile-logout-button">Log Out</button>
+    </main>
+
+    <script>
+        (function () {
+            const details = document.getElementById("profile-details");
+            const form = document.getElementById("change-password-form");
+            const oldPasswordInput = document.getElementById("old-password");
+            const newPasswordInput = document.getElementById("new-password");
+            const confirmPasswordInput = document.getElementById("confirm-password");
+            const toast = document.getElementById("password-toast");
+            const securityNote = document.querySelector(".profile-security-note");
+            let toastTimer = null;
+
+            function readSettings(key) {
+                try {
+                    const value = JSON.parse(localStorage.getItem(key));
+                    return value && typeof value === "object" && !Array.isArray(value)
+                        ? value
+                        : {};
+                } catch (error) {
+                    return {};
+                }
+            }
+
+            function addProfileDetail(label, value) {
+                const term = document.createElement("dt");
+                term.textContent = label;
+                const description = document.createElement("dd");
+                description.textContent = value || "Not provided";
+                details.append(term, description);
+            }
+
+            const student = readSettings("spt-student-settings");
+            const project = readSettings("spt-project-settings");
+            addProfileDetail("Full Name", student["student-name"]);
+            addProfileDetail("Matriculation Number", student["matric-number"]);
+            addProfileDetail("Department", student.department);
+            addProfileDetail("Institution", student.institution);
+            addProfileDetail("Project Title", project["project-title"]);
+            addProfileDetail("Supervisor", project["supervisor-name"]);
+            addProfileDetail("Academic Session", project["academic-session"]);
+
+            function showToast(message, success) {
+                toast.textContent = message;
+                toast.classList.toggle("is-error", !success);
+                toast.hidden = false;
+                window.clearTimeout(toastTimer);
+                toastTimer = window.setTimeout(function () {
+                    toast.hidden = true;
+                }, 3000);
+            }
+
+            function bytesToBase64(bytes) {
+                return btoa(Array.from(bytes, function (byte) {
+                    return String.fromCharCode(byte);
+                }).join(""));
+            }
+
+            function base64ToBytes(value) {
+                return Uint8Array.from(atob(value), function (character) {
+                    return character.charCodeAt(0);
+                });
+            }
+
+            async function hashPassword(password, salt, iterations) {
+                if (!window.crypto || !window.crypto.subtle) {
+                    throw new Error("Secure password hashing is unavailable in this browser context.");
+                }
+
+                const key = await window.crypto.subtle.importKey(
+                    "raw",
+                    new TextEncoder().encode(password),
+                    "PBKDF2",
+                    false,
+                    ["deriveBits"]
+                );
+                const bits = await window.crypto.subtle.deriveBits({
+                    name: "PBKDF2",
+                    salt: salt,
+                    iterations: iterations,
+                    hash: "SHA-256"
+                }, key, 256);
+                return new Uint8Array(bits);
+            }
+
+            if (!localStorage.getItem("spt-local-password")) {
+                securityNote.textContent = "This static prototype keeps a password hash in this browser. It does not provide server authentication. Leave Old Password blank the first time you set a password.";
+            }
+
+            form.addEventListener("submit", async function (event) {
+                event.preventDefault();
+
+                const oldPassword = oldPasswordInput.value;
+                const newPassword = newPasswordInput.value;
+                const confirmPassword = confirmPasswordInput.value;
+
+                if (newPassword.length < 8) {
+                    showToast("New Password must be at least 8 characters.", false);
+                    return;
+                }
+
+                if (newPassword !== confirmPassword) {
+                    showToast("New Password and Confirm Password do not match.", false);
+                    confirmPasswordInput.focus();
+                    return;
+                }
+
+                try {
+                    const savedRecord = JSON.parse(localStorage.getItem("spt-local-password") || "null");
+                    const iterations = 150000;
+
+                    if (savedRecord) {
+                        if (!oldPassword) {
+                            showToast("Enter your Old Password to continue.", false);
+                            oldPasswordInput.focus();
+                            return;
+                        }
+
+                        const oldHash = await hashPassword(
+                            oldPassword,
+                            base64ToBytes(savedRecord.salt),
+                            savedRecord.iterations
+                        );
+                        if (bytesToBase64(oldHash) !== savedRecord.hash) {
+                            showToast("Old Password is incorrect.", false);
+                            oldPasswordInput.focus();
+                            return;
+                        }
+                    }
+
+                    const salt = window.crypto.getRandomValues(new Uint8Array(16));
+                    const newHash = await hashPassword(newPassword, salt, iterations);
+                    localStorage.setItem("spt-local-password", JSON.stringify({
+                        salt: bytesToBase64(salt),
+                        hash: bytesToBase64(newHash),
+                        iterations: iterations
+                    }));
+
+                    form.reset();
+                    showToast("Password changed successfully", true);
+                } catch (error) {
+                    console.error("Could not change local password:", error);
+                    showToast("Password could not be changed in this browser.", false);
+                }
+            });
+        })();
+    </script>
+</body>
+</html>

@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Student Review | Supervisor Portal</title>
+    <script>
+        try { if (localStorage.getItem("theme") === "dark") document.documentElement.dataset.theme = "dark"; } catch (error) { console.error("Could not read the saved theme:", error); }
+    </script>
+    <link rel="stylesheet" href="../../spt.css">
+    <script src="../../supervisor-portal.js" defer></script>
+</head>
+<body>
+    <main class="supervisor-portal" data-supervisor-page="student">
+        <header class="portal-topbar">
+            <a href="../">← My Students</a>
+            <button type="button" id="supervisor-logout" class="secondary-button">Log out</button>
+        </header>
+        <section class="portal-heading">
+            <p class="eyebrow">STUDENT REVIEW</p>
+            <h1 id="portal-student-name">Student</h1>
+            <p id="portal-student-project"></p>
+        </section>
+        <div class="portal-controls">
+            <label for="portal-stage-status">Stage decision</label>
+            <select id="portal-stage-status">
+                <option value="Pending">Pending</option>
+                <option value="Approved">Approved</option>
+                <option value="Needs Revision">Needs Revision</option>
+            </select>
+            <label for="portal-stage-deadline">Set deadline</label>
+            <input type="date" id="portal-stage-deadline">
+            <button type="button" id="portal-save-review">Save review</button>
+            <span id="portal-review-status" role="status"></span>
+        </div>
+        <div class="portal-tabs" role="tablist" aria-label="Student records">
+            <button type="button" role="tab" aria-selected="true" data-portal-tab="tasks">Tasks</button>
+            <button type="button" role="tab" aria-selected="false" data-portal-tab="documents">Documents</button>
+            <button type="button" role="tab" aria-selected="false" data-portal-tab="journal">Journal</button>
+            <button type="button" role="tab" aria-selected="false" data-portal-tab="chat">Chat</button>
+        </div>
+        <section class="portal-panel" id="portal-tab-tasks" role="tabpanel"></section>
+        <section class="portal-panel" id="portal-tab-documents" role="tabpanel" hidden></section>
+        <section class="portal-panel" id="portal-tab-journal" role="tabpanel" hidden></section>
+        <section class="portal-panel" id="portal-tab-chat" role="tabpanel" hidden></section>
+    </main>
+</body>
+</html>

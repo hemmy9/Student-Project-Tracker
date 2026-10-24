@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Frontend-only AI project assistant mock conversation.">
+    <title>AI Assistant | ProjectTrack</title>
+    <link rel="stylesheet" href="spt.css">
+    <script src="spt.js" defer></script>
+    <script src="chat.js" defer></script>
+    <script src="drafts.js" defer></script>
+</head>
+<body>
+    <header class="page-header">
+        <p class="eyebrow">PROJECT COMMUNICATION</p>
+        <h1>AI Assistant</h1>
+        <p>Explore next steps informed by your supervisor's feedback.</p>
+    </header>
+    <main class="mock-chat-page" id="ai-chat-app">
+        <section class="write-for-me-card" id="write-for-me-card" aria-labelledby="write-for-me-heading">
+            <img class="writer-robot-illustration" src="public/illustrations/ai-robot.svg" alt="" aria-hidden="true">
+            <div class="write-for-me-heading">
+                <div>
+                    <h2 id="write-for-me-heading">Write for Me <span aria-hidden="true">✨</span></h2>
+                    <p>Generate drafts for your project</p>
+                </div>
+                <span class="ai-aware-badge">AI writing tools</span>
+            </div>
+            <div class="writer-mode-grid" role="group" aria-label="Choose a writing tool">
+                <button type="button" class="writer-mode-button selected" data-writer-mode="chapter" aria-pressed="true">Write Chapter</button>
+                <button type="button" class="writer-mode-button" data-writer-mode="task" aria-pressed="false">Write Task Description</button>
+                <button type="button" class="writer-mode-button" data-writer-mode="abstract" aria-pressed="false">Write Abstract/Proposal</button>
+                <button type="button" class="writer-mode-button" data-writer-mode="improve" aria-pressed="false">Improve My Writing</button>
+            </div>
+            <div class="writer-input-panel" data-writer-panel="chapter">
+                <label for="writer-chapter-number">Chapter</label>
+                <select id="writer-chapter-number">
+                    <option value="1">Chapter 1</option>
+                    <option value="2">Chapter 2</option>
+                    <option value="3">Chapter 3</option>
+                    <option value="4">Chapter 4</option>
+                    <option value="5">Chapter 5</option>
+                </select>
+                <label for="writer-chapter-title">Task title</label>
+                <input id="writer-chapter-title" type="text" placeholder="Enter a task or chapter title">
+                <button type="button" class="primary-button" data-generate-mode="chapter">Generate Chapter Draft</button>
+            </div>
+            <div class="writer-input-panel" data-writer-panel="task" hidden>
+                <label for="writer-task-title">Task title</label>
+                <input id="writer-task-title" type="text" placeholder="Enter a task title">
+                <button type="button" class="primary-button" data-generate-mode="task">Write Task Description</button>
+            </div>
+            <div class="writer-input-panel" data-writer-panel="abstract" hidden>
+                <label for="writer-project-topic">Project topic</label>
+                <input id="writer-project-topic" type="text" placeholder="Enter your project topic">
+                <button type="button" class="primary-button" data-generate-mode="abstract">Write Abstract/Proposal</button>
+            </div>
+            <div class="writer-input-panel" data-writer-panel="improve" hidden>
+                <label for="writer-source-text">Text to improve</label>
+                <textarea id="writer-source-text" rows="4" placeholder="Paste a paragraph to polish"></textarea>
+                <button type="button" class="primary-button" data-generate-mode="improve">Polish My Writing</button>
+            </div>
+            <section class="writer-preview-section" id="writer-preview-section" aria-live="polite" hidden>
+                <div class="writer-preview-label">
+                    <span class="draft-badge">AI Draft — Edit before submitting</span>
+                </div>
+                <div class="writer-preview" id="writer-output" tabindex="0"></div>
+                <div class="writer-actions">
+                    <button type="button" class="secondary-button" id="writer-copy-button">Copy</button>
+                    <button type="button" class="primary-button" id="writer-insert-task-button">Insert into Task</button>
+                    <button type="button" class="secondary-button" id="writer-insert-document-button">Insert into Document</button>
+                </div>
+                <p class="writer-status" id="writer-status" role="status" aria-live="polite"></p>
+            </section>
+        </section>
+        <section class="mock-chat-shell ai-chat-shell" aria-label="AI assistant chat">
+            <section class="chat-workspace">
+                <header class="chat-workspace-heading">
+                    <div>
+                        <h2>Project assistant</h2>
+                        <p class="chat-feedback-summary">A frontend-only example conversation. No AI service is connected.</p>
+                    </div>
+                    <span class="ai-aware-badge">Supervisor Feedback Aware</span>
+                </header>
+                <div class="ai-context-chips" id="ai-context-chips" aria-label="Assistant context"></div>
+                <div class="chat-message-list" id="ai-message-list" aria-live="polite"></div>
+                <form class="chat-compose" id="ai-chat-form">
+                    <label for="ai-chat-input">Ask about your next project step</label>
+                    <textarea id="ai-chat-input" rows="3" placeholder="How can I improve this stage?"></textarea>
+                    <div class="chat-form-row">
+                        <button type="submit" class="primary-button">Send mock message</button>
+                        <span class="chat-feedback-summary">Replies are examples only.</span>
+                    </div>
+                </form>
+            </section>
+        </section>
+    </main>
+</body>
+</html>

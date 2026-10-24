@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Mock supervisor feedback and project-stage chat.">
+    <title>Supervisor Chat | ProjectTrack</title>
+    <link rel="stylesheet" href="spt.css">
+    <script src="spt.js" defer></script>
+    <script src="chat.js" defer></script>
+    <script src="drafts.js" defer></script>
+</head>
+<body>
+    <header class="page-header">
+        <p class="eyebrow">PROJECT COMMUNICATION</p>
+        <h1>Supervisor Chat</h1>
+        <p>Review stage feedback and keep your project discussions together.</p>
+    </header>
+    <main class="mock-chat-page" id="supervisor-chat-app">
+        <section class="mock-chat-shell" aria-label="Supervisor chat workspace">
+            <nav class="chat-stage-list" aria-label="Project stages">
+                <h2>Project stages</h2>
+                <div id="supervisor-stage-buttons"></div>
+            </nav>
+            <section class="chat-workspace">
+                <header class="chat-workspace-heading">
+                    <div class="supervisor-chat-identity">
+                        <span class="chat-avatar supervisor-chat-avatar" id="supervisor-avatar-initials" aria-hidden="true">DS</span>
+                        <div>
+                            <h2 id="supervisor-name-label">Dr. Smith</h2>
+                            <p class="supervisor-presence">
+                                <span id="supervisor-status-dot" class="presence-dot" aria-hidden="true"></span>
+                                <span id="supervisor-status-text">Active now</span>
+                            </p>
+                        </div>
+                    </div>
+                    <div class="supervisor-stage-heading">
+                        <h3 id="supervisor-stage-heading">Research</h3>
+                        <p class="chat-feedback-summary" id="supervisor-stage-summary"></p>
+                    </div>
+                    <span class="ai-aware-badge">Mock conversation</span>
+                </header>
+                <div class="chat-feedback-history" id="supervisor-feedback-history" aria-label="Stage rating history"></div>
+                <section class="student-feedback-panel" aria-labelledby="student-feedback-heading">
+                    <h3 id="student-feedback-heading">Supervisor feedback</h3>
+                    <div id="student-feedback-list" aria-live="polite"></div>
+                </section>
+                <div class="chat-message-list" id="supervisor-message-list" aria-live="polite"></div>
+                <form class="chat-compose supervisor-chat-compose" id="supervisor-chat-form">
+                    <span class="chat-avatar student-chat-avatar" aria-hidden="true">S</span>
+                    <label class="visually-hidden" for="supervisor-chat-input">Message Dr. Smith</label>
+                    <textarea id="supervisor-chat-input" rows="2" placeholder="Write a message..."></textarea>
+                    <button type="submit" class="chat-send-button" aria-label="Send message" disabled>
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m22 2-7 20-4-9-9-4Z"/><path d="M22 2 11 13"/></svg>
+                    </button>
+                </form>
+            </section>
+        </section>
+    </main>
+</body>
+</html>

@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Data Management | Student Project Tracking System</title>
+
+    <link rel="stylesheet" href="spt.css">
+    <script src="spt.js" defer></script>
+</head>
+<body>
+
+    <header class="page-header">
+        <h1>Data Management</h1>
+        <p>Manage, export and protect your project information.</p>
+
+    </header>
+
+    <main>
+        <section class="panel">
+            <h2>Project Data Backup</h2>
+            <p>
+                Create a backup of your saved project information
+                so you can keep a copy for safekeeping.
+            </p>
+
+            <button type="button" id="export-backup-button">
+                Export Project Backup
+            </button>
+
+            <p id="backup-status" aria-live="polite"></p>
+        </section>
+    <section class="panel">
+            <h2>Restore Project Backup</h2>
+
+            <p>
+                Select a previously exported JSON backup to restore
+                your saved project information. Restoring will replace
+                the corresponding data currently saved in this browser.
+            </p>
+
+            <label for="restore-backup-file">
+                Choose Backup File
+            </label>
+
+            <input
+                type="file"
+                id="restore-backup-file"
+                accept=".json,application/json"
+            >
+
+            <div class="restore-actions">
+                <button type="button" id="restore-backup-button">
+                    Restore Project Backup
+                </button>
+
+                <button type="button" id="cancel-restore-button">
+                    Cancel
+                </button>
+            </div>
+
+
+            <p id="restore-status" aria-live="polite"></p>
+        </section>
+    </main>
+
+</body>
+</html>

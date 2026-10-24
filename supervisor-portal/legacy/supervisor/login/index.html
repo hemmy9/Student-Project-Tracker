@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Supervisor Login | ProjectTrack</title>
+    <script>
+        try { if (localStorage.getItem("theme") === "dark") document.documentElement.dataset.theme = "dark"; } catch (error) { console.error("Could not read the saved theme:", error); }
+    </script>
+    <link rel="stylesheet" href="../../spt.css">
+    <script src="../../supervisor-portal.js" defer></script>
+</head>
+<body>
+    <main class="supervisor-portal" data-supervisor-page="login">
+        <header class="portal-topbar"><a href="../../spt.html">ProjectTrack</a></header>
+        <section class="panel portal-login-panel">
+            <p class="eyebrow">SUPERVISOR WORKSPACE</p>
+            <h1>Supervisor Login</h1>
+            <p>Sign in to review students assigned to this supervisor ID.</p>
+            <form id="supervisor-login-form">
+                <label for="supervisor-login-id">Supervisor ID or email</label>
+                <input id="supervisor-login-id" autocomplete="username" required>
+                <label for="supervisor-login-password">Password</label>
+                <input id="supervisor-login-password" type="password" autocomplete="current-password" required>
+                <button type="submit" class="primary-button">Sign in</button>
+                <p id="supervisor-login-status" role="status" aria-live="polite"></p>
+            </form>
+            <p class="portal-demo-note">Demo only: credentials are not verified or sent to a server. Use the supervisor name or ID configured in Project Settings to see the matching local student.</p>
+        </section>
+    </main>
+</body>
+</html>

@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Supporting Documents | Student Progress Tracker</title>
+
+    <link rel="stylesheet" href="spt.css">
+    <script src="spt.js" defer></script>
+    <script src="drafts.js" defer></script>
+</head>
+<body>
+
+    <header class="page-header">
+        <h1>Supporting Documents</h1>
+        <p>Organize and manage your final-year project materials.</p>
+
+    </header>
+
+    <main>
+        <section class="panel">
+            <h2>Project Documents</h2>
+            <section class="panel">
+    <h2>Add a Project Document</h2>
+
+    <form id="document-form">
+
+        <label for="document-title">Document Title</label>
+        <input
+            type="text"
+            id="document-title"
+            placeholder="e.g. Chapter One Draft"
+            required
+        >
+
+        <label for="document-category">Document Type</label>
+        <select id="document-category" required>
+            <option value="">Select a category</option>
+            <option value="Proposal">Project Proposal</option>
+            <option value="Research">Research Materials</option>
+            <option value="Chapter">Chapter Draft</option>
+            <option value="Reference">References</option>
+            <option value="Other">Other</option>
+        </select>
+
+        <label for="document-file">Attach File (Optional)</label>
+        <input
+            type="file"
+            id="document-file"
+            accept=".pdf,.docx,.doc,.xlsx,.pptx,.txt,.png,.jpg,.jpeg,.json"
+        >
+        <p class="document-storage-note">Attachments are saved in this browser. Maximum file size: 20 MB.</p>
+        <progress id="document-upload-progress" class="document-upload-progress" max="100" value="0" hidden></progress>
+        <p id="document-upload-progress-text" class="document-upload-progress-text" role="status" aria-live="polite" hidden></p>
+
+        <label for="document-description">Description</label>
+        <textarea
+            id="document-description"
+            placeholder="Briefly describe this document..."
+            rows="4"
+        ></textarea>
+
+        <button type="submit" class="primary-button">
+            Add Document
+        </button>
+
+        <p id="document-toast" class="app-toast" role="status" aria-live="polite" hidden></p>
+
+    </form>
+</section>
+        </section>
+
+        <section class="panel" id="saved-documents">
+    <h2>My Project Documents</h2>
+
+    <p id="document-count">
+        You haven't added any documents yet.
+    </p>
+
+    <div id="document-list">
+        <!-- Saved documents will appear here -->
+    </div>
+</section>
+    </main>
+
+</body>
+</html>

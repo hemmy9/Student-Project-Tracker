@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Supervisor Portal | ProjectTrack</title>
+    <script>
+        try { if (localStorage.getItem("theme") === "dark") document.documentElement.dataset.theme = "dark"; } catch (error) { console.error("Could not read the saved theme:", error); }
+    </script>
+    <link rel="stylesheet" href="../spt.css">
+    <script src="../supervisor-portal.js" defer></script>
+</head>
+<body>
+    <main class="supervisor-portal" data-supervisor-page="dashboard">
+        <header class="portal-topbar">
+            <a href="../spt.html">ProjectTrack</a>
+            <button type="button" id="supervisor-logout" class="secondary-button">Log out</button>
+        </header>
+        <section class="portal-heading">
+            <p class="eyebrow">SUPERVISOR WORKSPACE</p>
+            <h1>My Students (<span id="supervisor-student-count">0</span>)</h1>
+            <p>Monitor progress and review recent student submissions.</p>
+        </section>
+        <div class="portal-student-grid" id="supervisor-student-list" aria-live="polite"></div>
+        <p class="portal-demo-note">This local demo stores portal data in this browser; it is not a secure multi-user service.</p>
+    </main>
+</body>
+</html>

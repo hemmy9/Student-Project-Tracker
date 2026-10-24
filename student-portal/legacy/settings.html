@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Project Settings | Student Progress Tracker</title>
+
+    <link rel="stylesheet" href="spt.css">
+    <script src="spt.js" defer></script>
+</head>
+<body>
+
+    <header class="page-header">
+        <h1>Project Settings</h1>
+        <p>Manage your student profile and final-year project information.</p>
+
+    </header>
+
+    <main>
+       <section class="panel">
+    <h2>Student Information</h2>
+
+    <form id="student-settings-form">
+
+        <label for="student-name">Full Name</label>
+        <input
+            type="text"
+            id="student-name"
+            placeholder="Enter your full name"
+            required
+        >
+
+        <label for="matric-number">Matriculation Number</label>
+        <input
+            type="text"
+            id="matric-number"
+            placeholder="Enter your matric number"
+            required
+        >
+
+        <label for="department">Department</label>
+        <input
+            type="text"
+            id="department"
+            placeholder="e.g. Computer Science"
+            required
+        >
+
+        <label for="institution">Institution</label>
+        <input
+            type="text"
+            id="institution"
+            placeholder="Enter your institution"
+            required
+        >
+
+        <button type="submit" class="primary-button">
+            Save Student Information
+        </button>
+
+    </form>
+</section>
+
+<section class="panel">
+    <h2>Project Information</h2>
+
+    <form id="project-settings-form">
+
+        <label for="project-title">Project Title</label>
+        <input
+            type="text"
+            id="project-title"
+            placeholder="Enter your final-year project title"
+            required
+        >
+
+        <label for="supervisor-name">Supervisor's Name</label>
+        <input
+            type="text"
+            id="supervisor-name"
+            placeholder="Enter your supervisor's name"
+            required
+        >
+
+        <label for="supervisor-id">Supervisor ID or Email (optional)</label>
+        <input
+            type="text"
+            id="supervisor-id"
+            placeholder="Defaults to supervisor name if left blank"
+        >
+
+        <label for="academic-session">Academic Session</label>
+        <input
+            type="text"
+            id="academic-session"
+            placeholder="e.g. 2026/2027"
+            required
+        >
+
+        <label for="project-description">Project Description</label>
+        <textarea
+            id="project-description"
+            placeholder="Briefly describe your project..."
+            rows="5"
+        ></textarea>
+
+        <button type="submit" class="primary-button">
+            Save Project Information
+        </button>
+
+    </form>
+</section>
+    </main>
+
+</body>
+</html>

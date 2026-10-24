@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Weekly Progress Journal | Student Project Tracker</title>
+
+    <link rel="stylesheet" href="spt.css">
+    <script src="spt.js" defer></script>
+    <script src="drafts.js" defer></script>
+</head>
+<body>
+
+    <header class="page-header">
+        <h1>Weekly Progress Journal</h1>
+        <p>Record your progress, reflect on challenges, and plan your next steps.</p>
+
+    </header>
+
+    <main>
+       <section class="panel">
+    <h2>Record Weekly Progress</h2>
+    <p>Document your project activities and reflect on your progress.</p>
+
+    <form id="journal-form">
+
+        <label for="journal-week">Week</label>
+        <input
+            type="number"
+            id="journal-week"
+            name="journal-week"
+            min="1"
+            max="52"
+            placeholder="e.g. 1"
+            required
+        >
+
+        <label for="journal-date">Week Ending</label>
+        <input
+            type="date"
+            id="journal-date"
+            name="journal-date"
+            required
+        >
+
+        <label for="journal-work">Work Completed</label>
+        <textarea
+            id="journal-work"
+            name="journal-work"
+            rows="4"
+            placeholder="Describe the work you completed this week..."
+            required
+        ></textarea>
+
+        <label for="journal-challenges">Challenges Encountered</label>
+        <textarea
+            id="journal-challenges"
+            name="journal-challenges"
+            rows="3"
+            placeholder="What difficulties did you face?"
+        ></textarea>
+
+        <label for="journal-lessons">Lessons Learned</label>
+        <textarea
+            id="journal-lessons"
+            name="journal-lessons"
+            rows="3"
+            placeholder="What new skills or knowledge did you gain?"
+        ></textarea>
+
+        <label for="journal-next-week">Plans for Next Week</label>
+        <textarea
+            id="journal-next-week"
+            name="journal-next-week"
+            rows="3"
+            placeholder="What do you plan to accomplish next week?"
+            required
+        ></textarea>
+
+        <button type="submit" class="primary-button">
+            Save Journal Entry
+        </button>
+
+    </form>
+</section>
+<section class="panel" id="saved-journals">
+    <h2>Previous Journal Entries</h2>
+    <p>Review your weekly progress and past reflections.</p>
+
+    <div id="journal-list">
+        <p class="activity-empty">
+            No journal entries yet. Save your first weekly entry to see it here.
+        </p>
+    </div>
+</section>
+    </main>
+
+</body>
+</html>

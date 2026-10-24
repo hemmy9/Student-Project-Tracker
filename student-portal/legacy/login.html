@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Signed-out state for the local Student Project Tracker.">
+    <title>Signed Out | Student Project Tracker</title>
+    <script>
+        try {
+            if (localStorage.getItem("theme") === "dark") {
+                document.documentElement.dataset.theme = "dark";
+            }
+        } catch (error) {
+            console.error("Could not load theme preference:", error);
+        }
+    </script>
+    <link rel="stylesheet" href="spt.css">
+</head>
+<body class="signed-out-page">
+    <main class="signed-out-panel">
+        <div class="global-brand-mark" aria-hidden="true">P</div>
+        <p class="signed-out-eyebrow">PROJECT TRACKER</p>
+        <h1>You're signed out</h1>
+        <p>This tracker runs locally in your browser and does not have account authentication. Your local tracker data was cleared when you logged out.</p>
+        <a class="primary-button" href="spt.html">Return to Dashboard</a>
+    </main>
+</body>
+</html>

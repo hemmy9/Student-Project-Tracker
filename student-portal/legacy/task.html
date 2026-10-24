@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Task Manager | Student Project Tracker</title>
+
+    <!-- Reuse your existing stylesheet -->
+    <link rel="stylesheet" href="spt.css">
+    <script src="spt.js" defer></script>
+    <script src="drafts.js" defer></script>
+</head>
+<body>
+
+    <header class="page-header">
+        <h1>Task Manager</h1>
+        <p>Organize and manage your student project tasks.</p>
+    </header>
+
+    <main>
+        <section class="panel">
+    <h2>Your Tasks</h2>
+    <p>Create, organize and track your project work.</p>
+
+    <div class="task-draft-banner" id="task-draft-banner" hidden>
+        <span id="task-draft-banner-text">You have an unfinished draft</span>
+        <button type="button" id="restore-task-draft">Continue</button>
+        <button type="button" id="discard-task-draft">Discard</button>
+    </div>
+
+    <button type="button" id="open-task-form">
+        + New Task
+    </button>
+
+    <section id="task-form-section" hidden>
+        <h3 id="task-form-heading">Create a Task</h3>
+
+        <form id="task-form">
+            <div class="task-form-field">
+                <label for="task-title">Task title</label>
+                <input type="text" id="task-title" required>
+            </div>
+            <div class="task-form-field">
+                <label for="task-description">Description</label>
+                <textarea id="task-description"></textarea>
+            </div>
+            <div class="task-form-field">
+                <label for="task-priority">Priority</label>
+                <select id="task-priority">
+                    <option value="Low">Low</option>
+                    <option value="Medium" selected>Medium</option>
+                    <option value="High">High</option>
+                </select>
+            </div>
+            <div class="task-form-field">
+                <label for="task-stage">Project Stage</label>
+                <select id="task-stage">
+                    <option value="Planning">Planning</option>
+                    <option value="Research">Research</option>
+                    <option value="Design">Design</option>
+                    <option value="Development">Development</option>
+                    <option value="Testing">Testing</option>
+                    <option value="Documentation">Documentation</option>
+                </select>
+            </div>
+            <div class="task-form-field">
+                <label for="task-deadline">Deadline</label>
+                <input type="date" id="task-deadline">
+            </div>
+            <div class="form-actions">
+                <button type="submit">Save Task</button>
+                <button type="button" id="save-task-draft">Save as Draft</button>
+                <button type="button" id="cancel-task">Cancel</button>
+            </div>
+        </form>
+        <p id="task-draft-autosave-label" class="draft-autosave-label" role="status" hidden></p>
+    </section>
+
+    <div id="task-list">
+        <!-- Saved tasks will appear here -->
+    </div>
+</section>
+    </main>
+
+</body>
+</html>

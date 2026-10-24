@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Project Reports | Student Project Tracker</title>
+    <script>
+        try {
+            const savedTheme = localStorage.getItem("theme");
+            if (savedTheme === "dark") document.documentElement.dataset.theme = "dark";
+            document.documentElement.dataset.themeBooting = "true";
+        } catch (error) {
+            console.error("Could not read the saved theme before report rendering:", error);
+            document.documentElement.dataset.themeBooting = "true";
+        }
+    </script>
+    <link rel="stylesheet" href="spt.css">
+    <script src="https://unpkg.com/jspdf@2.5.2/dist/jspdf.umd.min.js" defer></script>
+    <script src="spt.js" defer></script>
+</head>
+<body>
+    <header class="page-header">
+        <h1>Project Reports</h1>
+        <p>Review your project progress, task completion, and weekly activities.</p>
+    </header>
+
+    <main class="report-page">
+        <div class="report-actions">
+            <button type="button" id="print-report-button" class="report-print-button">
+                <span aria-hidden="true">🖨️</span> Print Report
+            </button>
+            <button type="button" id="download-report-button" class="report-download-button">
+                <span aria-hidden="true">⬇️</span> Download PDF
+            </button>
+            <p id="report-download-status" class="report-actions-hint" role="status" aria-live="polite"></p>
+        </div>
+
+        <section class="panel report-section" id="report-overview">
+            <h2>Project Overview</h2>
+            <p>A quick snapshot of your project progress.</p>
+            <div class="report-stats">
+                <div class="report-stat"><span>Total Tasks</span><strong id="report-total-tasks">0</strong></div>
+                <div class="report-stat"><span>Completed</span><strong id="report-completed-tasks">0</strong></div>
+                <div class="report-stat"><span>In Progress</span><strong id="report-progress-tasks">0</strong></div>
+                <div class="report-stat"><span>Pending</span><strong id="report-pending-tasks">0</strong></div>
+                <div class="report-stat"><span>Completion Rate</span><strong id="report-completion-rate">0%</strong></div>
+            </div>
+        </section>
+
+        <section class="panel report-section" id="report-task-summary">
+            <h2>Task Summary</h2>
+            <p>A breakdown of your project tasks.</p>
+            <div class="report-breakdown">
+                <div class="report-breakdown-item"><span>High Priority</span><strong id="report-high-priority">0</strong></div>
+                <div class="report-breakdown-item"><span>Medium Priority</span><strong id="report-medium-priority">0</strong></div>
+                <div class="report-breakdown-item"><span>Low Priority</span><strong id="report-low-priority">0</strong></div>
+                <div class="report-breakdown-item"><span>Overdue Tasks</span><strong id="report-overdue-tasks">0</strong></div>
+            </div>
+            <h3>Task Details</h3>
+            <div class="report-table-wrap">
+                <table class="report-task-table">
+                    <thead>
+                        <tr><th>Task</th><th>Stage</th><th>Priority</th><th>Deadline</th></tr>
+                    </thead>
+                    <tbody id="report-task-table-body"></tbody>
+                </table>
+                <p class="report-empty" id="report-task-empty" hidden>No tasks have been added yet.</p>
+            </div>
+        </section>
+
+        <section class="panel report-section" id="report-journal-summary">
+            <h2>Weekly Progress Summary</h2>
+            <p>A summary of your recorded project activities.</p>
+            <div class="report-breakdown">
+                <div class="report-breakdown-item"><span>Total Journal Entries</span><strong id="report-journal-count">0</strong></div>
+                <div class="report-breakdown-item"><span>Latest Week Recorded</span><strong id="report-latest-week">—</strong></div>
+            </div>
+            <h3>Weekly Notes</h3>
+            <div class="report-weekly-notes" id="report-weekly-notes"></div>
+        </section>
+    </main>
+</body>
+</html>
