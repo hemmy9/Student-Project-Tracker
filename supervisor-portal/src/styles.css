@@ -52,4 +52,4 @@ textarea { resize: vertical; }
 .error { color: #a61b1b; }
 .success { color: #08794c; }
 .demo-notice { margin-top: 1.5rem; color: #79520b; font-size: 0.85rem; line-height: 1.5; }
-
+.review-actions { display: flex; gap: 0.65rem; margin-top: 0.75rem; }

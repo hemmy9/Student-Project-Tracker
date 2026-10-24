@@ -69,10 +69,12 @@ function LoginPage({ onLogin }) {
 function Dashboard({ user, onLogout }) {
   const [students, setStudents] = useState([]);
   const [tasks, setTasks] = useState([]);
+  const [documents, setDocuments] = useState([]);
   const [feedbacks, setFeedbacks] = useState([]);
   const [messages, setMessages] = useState([]);
   const [selectedStudent, setSelectedStudent] = useState("");
   const [comment, setComment] = useState("");
+  const [reviewFeedback, setReviewFeedback] = useState({});
   const [error, setError] = useState("");
   const [notice, setNotice] = useState("");
   const [busy, setBusy] = useState(false);
@@ -80,18 +82,21 @@ function Dashboard({ user, onLogout }) {
 
   async function loadData() {
     setError("");
-    const [studentResult, taskResult, feedbackResult, messageResult] = await Promise.all([
+    const [studentResult, taskResult, documentResult, feedbackResult, messageResult] = await Promise.all([
       supabase.from("students").select("*").eq("role", "student").order("name"),
       supabase.from("tasks").select("*"),
+      supabase.from("documents").select("*").order("created_at", { ascending: false }),
       supabase.from("feedbacks").select("*"),
       supabase.from("messages").select("*")
     ]);
     if (studentResult.error) throw studentResult.error;
     if (taskResult.error) throw taskResult.error;
+    if (documentResult.error) throw documentResult.error;
     if (feedbackResult.error) throw feedbackResult.error;
     if (messageResult.error) throw messageResult.error;
     setStudents(studentResult.data || []);
     setTasks(taskResult.data || []);
+    setDocuments(documentResult.data || []);
     setFeedbacks(feedbackResult.data || []);
     setMessages(messageResult.data || []);
   }
@@ -147,6 +152,34 @@ function Dashboard({ user, onLogout }) {
     }
   }
 
+  async function reviewDocument(document, status) {
+    setError("");
+    setNotice("");
+    setBusy(true);
+    try {
+      if (user?.role !== "supervisor") {
+        throw new Error("Only a supervisor can review documents.");
+      }
+      const { error: updateError } = await supabase
+        .from("documents")
+        .update({
+          status,
+          review_feedback: (reviewFeedback[document.id] || "").trim() || null,
+          reviewed_by: user.id,
+          reviewed_at: new Date().toISOString()
+        })
+        .eq("id", document.id);
+      if (updateError) throw updateError;
+      setNotice(`Document ${status}.`);
+      await loadData();
+    } catch (reviewError) {
+      console.error("Could not update document review:", reviewError);
+      setError(reviewError.message || "Could not update document review.");
+    } finally {
+      setBusy(false);
+    }
+  }
+
   return (
     <main className="page">
       <header className="topbar">
@@ -177,6 +210,42 @@ function Dashboard({ user, onLogout }) {
           );
         })}
         {students.length === 0 && <p className="muted">No student records were found.</p>}
+      </section>
+      <section className="panel">
+        <h2>Document reviews</h2>
+        {documents.length === 0 ? <p className="muted">No documents have been submitted.</p> : (
+          <ul className="record-list">
+            {documents.map((document) => {
+              const student = students.find((item) => item.id === document.student_id);
+              return (
+                <li key={document.id}>
+                  <div>
+                    <strong>{student?.name || student?.email || "Student"}</strong>
+                    <p>
+                      Chapter {document.chapter || "—"} · {document.title || document.filename || "Document"} ·{" "}
+                      <span className="badge">{document.status || "Pending"}</span>
+                    </p>
+                    {document.file_url && <a href={document.file_url} target="_blank" rel="noreferrer">Open document</a>}
+                    <label htmlFor={`review-${document.id}`}>Feedback for this document</label>
+                    <textarea
+                      id={`review-${document.id}`}
+                      rows="2"
+                      value={reviewFeedback[document.id] ?? document.review_feedback ?? ""}
+                      onChange={(event) => setReviewFeedback((current) => ({
+                        ...current,
+                        [document.id]: event.target.value
+                      }))}
+                    />
+                    <div className="review-actions">
+                      <button disabled={busy} type="button" onClick={() => reviewDocument(document, "approved")}>Approve</button>
+                      <button className="secondary" disabled={busy} type="button" onClick={() => reviewDocument(document, "rejected")}>Reject</button>
+                    </div>
+                  </div>
+                </li>
+              );
+            })}
+          </ul>
+        )}
       </section>
       <section className="panel">
         <h2>Leave feedback</h2>

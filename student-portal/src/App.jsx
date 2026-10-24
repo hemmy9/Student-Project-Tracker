@@ -72,6 +72,7 @@ function Dashboard({ user, onLogout }) {
   const [notice, setNotice] = useState("");
   const [busy, setBusy] = useState(false);
   const [file, setFile] = useState(null);
+  const [chapter, setChapter] = useState("1");
   const supabase = getSupabaseClient();
 
   async function loadData() {
@@ -118,10 +119,12 @@ function Dashboard({ user, onLogout }) {
       const uploaded = await uploadFile(file, `students/${user.id}`);
       const { error: insertError } = await supabase.from("documents").insert({
         student_id: user.id,
+        chapter: Number(chapter),
         title: file.name,
         filename: file.name,
         file_url: uploaded.url,
         file_path: uploaded.path,
+        status: "pending",
         created_at: new Date().toISOString()
       });
       if (insertError) throw insertError;
@@ -185,6 +188,12 @@ function Dashboard({ user, onLogout }) {
       <section className="panel">
         <h2>Upload a document</h2>
         <form className="upload-form" onSubmit={submitDocument}>
+          <label htmlFor="document-chapter">Chapter</label>
+          <select id="document-chapter" value={chapter} onChange={(event) => setChapter(event.target.value)}>
+            {[1, 2, 3, 4, 5].map((number) => (
+              <option key={number} value={number}>Chapter {number}</option>
+            ))}
+          </select>
           <label htmlFor="document-file">File</label>
           <input id="document-file" type="file" required onChange={(event) => setFile(event.target.files?.[0] || null)} />
           <button disabled={busy || !file} type="submit">{busy ? "Uploading…" : "Upload"}</button>
@@ -192,7 +201,12 @@ function Dashboard({ user, onLogout }) {
         <ul className="record-list">
           {data.documents.map((document) => (
             <li key={document.id}>
-              <span>{document.title || document.filename || "Document"}</span>
+              <span>
+                Chapter {document.chapter || "—"} · {document.title || document.filename || "Document"}
+                <br />
+                <span className="badge">{document.status || "Pending"}</span>
+                {document.review_feedback && <p className="muted">{document.review_feedback}</p>}
+              </span>
               {document.file_url && <a href={document.file_url} target="_blank" rel="noreferrer">Open</a>}
             </li>
           ))}

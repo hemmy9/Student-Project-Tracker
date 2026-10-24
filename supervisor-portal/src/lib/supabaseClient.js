@@ -5,11 +5,12 @@ let client;
 export function getSupabaseClient() {
   if (client) return client;
 
-  const url = import.meta.env.VITE_SUPABASE_URL;
-  const anonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
-  if (!url || !anonKey) {
-    throw new Error("Set VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY in .env.");
-  }
+  const url =
+    import.meta.env.VITE_SUPABASE_URL ||
+    "https://trcbyhouobuomteokyrk.supabase.co";
+  const anonKey =
+    import.meta.env.VITE_SUPABASE_ANON_KEY ||
+    "sb_publishable_HYSOE4b8CcDXFqnGfxwMnw_4Q1OABKW";
 
   client = createClient(url, anonKey);
   return client;
@@ -35,4 +36,3 @@ export function subscribeToTable(table, onChange, filter) {
     supabase.removeChannel(channel);
   };
 }
-

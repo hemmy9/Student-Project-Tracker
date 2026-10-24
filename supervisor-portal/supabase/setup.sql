@@ -14,6 +14,14 @@ create table if not exists public.supervisors (
     check (role = 'supervisor')
 );
 
+alter table public.documents
+  add column if not exists chapter integer check (chapter between 1 and 5),
+  add column if not exists status text not null default 'pending'
+    check (status in ('pending', 'approved', 'rejected')),
+  add column if not exists review_feedback text,
+  add column if not exists reviewed_by uuid,
+  add column if not exists reviewed_at timestamptz;
+
 do $$
 declare
   table_name text;
